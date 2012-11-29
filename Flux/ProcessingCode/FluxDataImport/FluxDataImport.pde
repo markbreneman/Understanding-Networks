@@ -1,16 +1,29 @@
 import processing.data.*;
-
+//VARIABLE FOR DATA PROCESSING
 ArrayList entry; 
 ArrayList entryrow;
 ArrayList arduinoData;
 Table data;
+//VARIABLE FOR SERIAL COMMUNICAION
+import processing.serial.*;
+Serial port;
+
+//byte outgoingData;
 
 void setup() {
   //  size(800, 800);
+
+
+  println("Available serial ports:");
+  println(Serial.list());
+
+  port = new Serial(this, Serial.list()[6], 9600);
+  port.bufferUntil('\n');
+
   // load the data and automatically parse the csv
   data = new Table(this, "../test5_112612_0426PM.csv");//go one directory up and fetch the file.
   data.removeTitleRow();//remove Control ROW
-  data.removeTitleRow();//remove Interval and Apt labesl
+  data.removeTitleRow();//remove Interval and Apt labels
 
   //Create and Array list for all the entries
   entry = new ArrayList();
@@ -36,7 +49,7 @@ void setup() {
   arduinoData = new ArrayList();
   float hotThreshold=75;
   float SDT=100;//System Difference Threshold. System minus Building Temp.
-  
+
   for (TableRow cols : data) {
     entryrow = new ArrayList();
     //APT 14n 
@@ -110,18 +123,45 @@ void setup() {
     else {
       entryrow.add(0);
     }
-
     arduinoData.add(entryrow);
   }
+
+//for (int i=0; i<1; i++) {
+//    println("row" + i);
+//    ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
+//    byte outgoingData [] =new byte[arduinoDataRow.size()];
+//    for (int j=0; j<arduinoDataRow.size(); j++) {
+//      outgoingData [j]=byte(arduinoDataRow.get(j));
+//    }
+//    port.write(outgoingData);
+//    println(outgoingData);
+//  }
+  
+  
+
 }
 void draw() {
+//for (int i=0; i<arduinoData.size(); i++) {
+
+  for (int i=0; i<1; i++) {
+    println("row" + i);
+    ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
+    byte outgoingData [] =new byte[arduinoDataRow.size()];
+    for (int j=0; j<arduinoDataRow.size(); j++) {
+      outgoingData [j]=byte(arduinoDataRow.get(j));
+    }
+    port.write(outgoingData);
+    println(outgoingData);
+  }
+
 }
+
 
 void keyPressed() {
   if (key =='i') {
     println(entry);
   }
-  
+
   if (key =='l') {
     println(arduinoData);
   }

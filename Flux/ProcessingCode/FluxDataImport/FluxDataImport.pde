@@ -9,6 +9,7 @@ import processing.serial.*;
 Serial port;
 
 //byte outgoingData;
+byte outgoingData [];
 
 void setup() {
   //  size(800, 800);
@@ -141,21 +142,20 @@ void setup() {
 
 }
 void draw() {
-//for (int i=0; i<arduinoData.size(); i++) {
+for (int i=0; i<arduinoData.size(); i++) {
 
-  for (int i=0; i<1; i++) {
-//    println("row" + i);
+//  for (int i=0; i<20; i++) {
+//   println("row" + i); 
     ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
-    byte outgoingData [] =new byte[arduinoDataRow.size()];
+    outgoingData = new byte[arduinoDataRow.size()];
    
     for (int j=0; j<arduinoDataRow.size(); j++) {
       outgoingData [j]=byte(arduinoDataRow.get(j));
+      
     }
-    port.write(outgoingData);
-    port.write('h');
-    println(outgoingData);
+ port.write(outgoingData);   
   }
-
+//    println(outgoingData);
 }
 
 

@@ -1,7 +1,7 @@
+int currentValue = 0;
+int values[] = {
+  0,0,0,0,0,0,0,0,0};
 
-int incomingData[9];
-byte incomingValue;   // Where to store the Bytes read
-byte index = 0;   // Index into array; where to store the Bytes
 
 int ledPin1=13;
 int ledPin2=12;
@@ -20,54 +20,48 @@ void setup()
 void loop() 
 { 
   if(Serial.available()){
+    int incomingValue = Serial.read();//READ
+    values[currentValue] = incomingValue;
+    currentValue++;
 
-    if(index<9){
-      incomingValue = Serial.read();//READ
-      incomingData[index] = incomingValue;//STORE THE BYTE IN THE ARRAY
-      index++;
-      Serial.println(incomingValue);
+    if(currentValue > 8){
+      currentValue = 0;
     }
   }
-  index=0;
+
+  if (values[5] == 1){
+    digitalWrite (ledPin1, HIGH);
+  }
+  else if (values[5]==0){
+    digitalWrite (ledPin1, LOW);
+  } 
+  //
+  if (values[6] == 1){
+    digitalWrite (ledPin2, HIGH);
+  }
+  else if (values[6]==0){
+    digitalWrite (ledPin2, LOW);
+  }
+  //  
+  if (values[7] == 1){
+    digitalWrite (ledPin3, HIGH);
+  }
+  else if (values[7]==0){
+    digitalWrite (ledPin3, LOW);
+  }
+
+  if (values[8] == 1){
+    digitalWrite (ledPin4, HIGH);
+  }
+  else if (values[8]==0){
+    digitalWrite (ledPin4, LOW);
+  }
+
+  //   myservo.write(outputValue3);
+  //}
 }
 
-//  Serial.println(incomingData);
 
-//  Serial.println(values[0]);
-//  Serial.println(values[1]);
-//  Serial.println(values[2]);
-
-
-//    if (values[0] == 1){
-//     digitalWrite (ledPin1, HIGH);
-//    }
-//    else if (values[0]==0){
-//      digitalWrite (ledPin1, LOW);
-//    } 
-//  //
-//      if (values[1] == 1){
-//     digitalWrite (ledPin2, HIGH);
-//    }
-//    else if (values[1]==0){
-//      digitalWrite (ledPin2, LOW);
-//    }
-//  //  
-//      if (values[2] == 1){
-//     digitalWrite (ledPin3, HIGH);
-//    }
-//    else if (values[2]==0){
-//      digitalWrite (ledPin3, LOW);
-//    }
-//  
-//    if (values[3] == 1){
-//   digitalWrite (ledPin4, HIGH);
-//  }
-//  else if (values[3]==0){
-//    digitalWrite (ledPin4, LOW);
-//  }
-
-//   myservo.write(outputValue3);
-//}
 
 
 

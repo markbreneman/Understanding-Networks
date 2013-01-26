@@ -2,7 +2,6 @@
 
 #include <SD.h>
 #include <Time.h>
-#include <avr/interrupt.h>
 
 // On the Ethernet Shield, CS is pin 4. Note that even if it's not
 // used as the CS pin, the hardware CS pin (10 on most Arduino boards,
@@ -18,12 +17,21 @@ int timeDay;
 int timeMonth;
 int timeYear;
 
+int currentMinute = 0;
+int previousMinute = 0;
+
+volatile int pulses = 0;
+
+
+
 void setup()
 {
+  attachInterrupt(0, readPulse, RISING);//What is this?
+  
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   ///SET TIME OF START...(APPROXIMATE)
-  setTime(1,47,0,1,12,2012); // another way to set the time
+  setTime(12,11,0,1,12,2012); // another way to set the time
 
   Serial.print("Initializing SD card...");
   // make sure that the default chip select pin is set to
@@ -37,13 +45,6 @@ void setup()
     return;
   }
   Serial.println("card initialized.");
-
-  pinMode(2, INPUT);
-  digitalWrite(2, HIGH);    // Enable pullup resistor
-  sei();                    // Enable global interrupts
-  EIMSK |= (1 << INT0);     // Enable external interrupt INT0
-  EICRA |= (1 << ISC01);    // Trigger INT0 on falling edge
-
 }
 
 void loop()
@@ -54,12 +55,32 @@ void loop()
 
   //ADD TIME STAMP
   timeHour=hour();
-  timeMinute=minute();  
+  timeMinute=minute();
+//  timeMinute=currentMinute;  
+  currentMinute=timeMinute;
   timeSecond=second();
   timeDay=day();
   timeMonth=month();
   timeYear=year();
+//    Serial.println(timeMinute);
+//  Serial.println("Current Minute" + timeMinute);
+//  Serial.println("previous Minute" + previousMinute);
 
+  // if the current time - the previous time > = 10 minutes, saveStuff(timeMinute, lastSaveMinute)
+
+  if (currentMinute - previousMinute >=1 ) {
+    saveStuff(); 
+    if (saveStuff() == true) {
+      previousMinute = currentMinute;
+      pulses = 0;
+    }
+  }
+}
+
+
+
+boolean saveStuff() {
+  boolean result = false;
   dataString += String(timeHour);
   dataString += ",";
   dataString += String(timeMinute);
@@ -71,12 +92,9 @@ void loop()
   dataString += String(timeMonth);
   dataString += ",";
   dataString += String(timeYear);
-}
+  dataString += ",";
+  dataString += pulses;
 
-
-// Interrupt Service Routine attached to INT0 vector
-ISR(INT0_vect)
-{
   digitalWrite(13, !digitalRead(13));    // Toggle LED on pin 13
   dataFile = SD.open("datalog.txt", FILE_WRITE);
   //  Serial.print("hello");
@@ -85,12 +103,23 @@ ISR(INT0_vect)
   if (dataFile) {
     dataFile.println(dataString);
     dataFile.close();
+    result = true;
+    Serial.print("saved!");
+
     // print to the serial port too:
     //    Serial.println(dataString);
+
   }  
   // if the file isn't open, pop up an error:
   else {
     Serial.println("error opening datalog.txt");
-  } 
+  }  
+  // tell the calling function whether we saved or not
+  return result;
+}
+
+
+void readPulse() {
+  pulses++;
 }
 

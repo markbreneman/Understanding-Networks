@@ -3,26 +3,22 @@ import processing.data.*;
 ArrayList entry; 
 ArrayList entryrow;
 ArrayList arduinoData;
-int average;
 Table data;
 //VARIABLE FOR SERIAL COMMUNICAION
 import processing.serial.*;
 Serial port;
-//TIMER FOR SENDING DATA
-Timer timer;
 
 //byte outgoingData;
 byte outgoingData [];
 
 void setup() {
   //  size(800, 800);
-  timer = new Timer(100);
-  timer.start();
+
 
   println("Available serial ports:");
   println(Serial.list());
 
-  port = new Serial(this, Serial.list()[6], 9600);
+  port = new Serial(this, Serial.list()[0], 9600); // changed from 6 to 0 (ea)
   port.bufferUntil('\n');
 
   // load the data and automatically parse the csv
@@ -46,7 +42,6 @@ void setup() {
     entryrow.add(cols.getFloat(8));//Apt 18I
     entryrow.add(cols.getFloat(9));//Outdoor Temp
     entryrow.add(cols.getFloat(10));//System Temp
-    entryrow.add((cols.getFloat(1)+cols.getFloat(2)+cols.getFloat(3)+cols.getFloat(4)+cols.getFloat(5)+cols.getFloat(6)+cols.getFloat(7)+cols.getFloat(8))/8);//APT. AVG.
     entry.add(entryrow);
   }
 
@@ -58,11 +53,9 @@ void setup() {
 
   for (TableRow cols : data) {
     entryrow = new ArrayList();
-    average=0;
     //APT 14n 
     if (cols.getFloat(1)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -71,7 +64,6 @@ void setup() {
     //APT 14o 
     if (cols.getFloat(2)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -80,7 +72,6 @@ void setup() {
     //APT 14q 
     if (cols.getFloat(3)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -89,7 +80,6 @@ void setup() {
     //APT 14p 
     if (cols.getFloat(4)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -98,7 +88,6 @@ void setup() {
     //APT 14r 
     if (cols.getFloat(5)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -107,7 +96,6 @@ void setup() {
     //APT 18a 
     if (cols.getFloat(6)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -116,7 +104,6 @@ void setup() {
     //APT 18e 
     if (cols.getFloat(7)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -125,28 +112,11 @@ void setup() {
     //APT 18i 
     if (cols.getFloat(8)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
     }
-    
-    //Outdoor
-    if (cols.getFloat(9)>hotThreshold) {
-      entryrow.add(1);
-    }
-    else {
-      entryrow.add(0);
-    }
-    
-    //System
-    if (cols.getFloat(10)>hotThreshold) {
-      entryrow.add(1);
-    }
-    else {
-      entryrow.add(0);
-    }
-    
+
     //Delta Outside/System Temp 
     if (cols.getFloat(10)-cols.getFloat(9)>SDT) {
       entryrow.add(1);
@@ -154,41 +124,38 @@ void setup() {
     else {
       entryrow.add(0);
     }
-//    println(average/8);
-    entryrow.add(average/8);
     arduinoData.add(entryrow);
   }
-  //
-  //for (int i=0; i<1; i++) {
-  //    println("row" + i);
-  //    ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
-  //    byte outgoingData [] =new byte[arduinoDataRow.size()];
-  //    for (int j=0; j<arduinoDataRow.size(); j++) {
-  //      outgoingData [j]=byte(arduinoDataRow.get(j));
-  //    }
-  //    port.write(outgoingData);
-  //    println(outgoingData);
-  //  }
+
+//for (int i=0; i<1; i++) {
+//    println("row" + i);
+//    ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
+//    byte outgoingData [] =new byte[arduinoDataRow.size()];
+//    for (int j=0; j<arduinoDataRow.size(); j++) {
+//      outgoingData [j]=byte(arduinoDataRow.get(j));
+//    }
+//    port.write(outgoingData);
+//    println(outgoingData);
+//  }
+  
+  
+
 }
 void draw() {
-  for (int i=0; i<arduinoData.size(); i++) {
+for (int i=0; i<arduinoData.size(); i++) {
 
-    //  for (int i=0; i<20; i++) {
-    //   println("row" + i); 
+//  for (int i=0; i<20; i++) {
+//   println("row" + i); 
     ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
     outgoingData = new byte[arduinoDataRow.size()];
-
+   
     for (int j=0; j<arduinoDataRow.size(); j++) {
       outgoingData [j]=byte(arduinoDataRow.get(j));
+      
     }
-//    port.write(outgoingData);
-    if (timer.isFinished()) {
-      timer.start();
-      port.write(outgoingData);
-//      println("sent Data");
-    }
+ port.write(outgoingData);   
   }
-  //    println(outgoingData);
+//    println(outgoingData);
 }
 
 
@@ -201,4 +168,5 @@ void keyPressed() {
     println(arduinoData);
   }
 }
+
 

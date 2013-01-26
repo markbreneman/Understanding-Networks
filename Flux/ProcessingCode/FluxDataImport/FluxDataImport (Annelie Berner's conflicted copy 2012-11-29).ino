@@ -1,34 +1,29 @@
 import processing.data.*;
-//VARIABLE FOR DATA PROCESSING
+
+//ARDUINO
+import processing.serial.*;
+Serial port;
+
+int value1; //snow // temprNum //THIS WILL BE THE LED VALUE
+int value2; //wind // windspeedNum //THIS WILL BE THE FAN VALUE
+int value3; //rain // humidityNum //SERVO
+
 ArrayList entry; 
 ArrayList entryrow;
 ArrayList arduinoData;
-int average;
 Table data;
-//VARIABLE FOR SERIAL COMMUNICAION
-import processing.serial.*;
-Serial port;
-//TIMER FOR SENDING DATA
-Timer timer;
-
-//byte outgoingData;
-byte outgoingData [];
 
 void setup() {
-  //  size(800, 800);
-  timer = new Timer(100);
-  timer.start();
-
-  println("Available serial ports:");
+  
+    println("Available serial ports:");
   println(Serial.list());
-
-  port = new Serial(this, Serial.list()[6], 9600);
-  port.bufferUntil('\n');
-
+  port = new Serial(this, Serial.list()[0], 9600);
+  
+  //  size(800, 800);
   // load the data and automatically parse the csv
   data = new Table(this, "../test5_112612_0426PM.csv");//go one directory up and fetch the file.
   data.removeTitleRow();//remove Control ROW
-  data.removeTitleRow();//remove Interval and Apt labels
+  data.removeTitleRow();//remove Interval and Apt labesl
 
   //Create and Array list for all the entries
   entry = new ArrayList();
@@ -46,7 +41,6 @@ void setup() {
     entryrow.add(cols.getFloat(8));//Apt 18I
     entryrow.add(cols.getFloat(9));//Outdoor Temp
     entryrow.add(cols.getFloat(10));//System Temp
-    entryrow.add((cols.getFloat(1)+cols.getFloat(2)+cols.getFloat(3)+cols.getFloat(4)+cols.getFloat(5)+cols.getFloat(6)+cols.getFloat(7)+cols.getFloat(8))/8);//APT. AVG.
     entry.add(entryrow);
   }
 
@@ -55,14 +49,12 @@ void setup() {
   arduinoData = new ArrayList();
   float hotThreshold=75;
   float SDT=100;//System Difference Threshold. System minus Building Temp.
-
+  
   for (TableRow cols : data) {
     entryrow = new ArrayList();
-    average=0;
     //APT 14n 
     if (cols.getFloat(1)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -71,7 +63,6 @@ void setup() {
     //APT 14o 
     if (cols.getFloat(2)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -80,7 +71,6 @@ void setup() {
     //APT 14q 
     if (cols.getFloat(3)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -89,7 +79,6 @@ void setup() {
     //APT 14p 
     if (cols.getFloat(4)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -98,7 +87,6 @@ void setup() {
     //APT 14r 
     if (cols.getFloat(5)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -107,7 +95,6 @@ void setup() {
     //APT 18a 
     if (cols.getFloat(6)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -116,7 +103,6 @@ void setup() {
     //APT 18e 
     if (cols.getFloat(7)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
@@ -125,28 +111,11 @@ void setup() {
     //APT 18i 
     if (cols.getFloat(8)>hotThreshold) {
       entryrow.add(1);
-      average+=1;
     }
     else {
       entryrow.add(0);
     }
-    
-    //Outdoor
-    if (cols.getFloat(9)>hotThreshold) {
-      entryrow.add(1);
-    }
-    else {
-      entryrow.add(0);
-    }
-    
-    //System
-    if (cols.getFloat(10)>hotThreshold) {
-      entryrow.add(1);
-    }
-    else {
-      entryrow.add(0);
-    }
-    
+
     //Delta Outside/System Temp 
     if (cols.getFloat(10)-cols.getFloat(9)>SDT) {
       entryrow.add(1);
@@ -154,49 +123,56 @@ void setup() {
     else {
       entryrow.add(0);
     }
-//    println(average/8);
-    entryrow.add(average/8);
+
     arduinoData.add(entryrow);
   }
-  //
-  //for (int i=0; i<1; i++) {
-  //    println("row" + i);
-  //    ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
-  //    byte outgoingData [] =new byte[arduinoDataRow.size()];
-  //    for (int j=0; j<arduinoDataRow.size(); j++) {
-  //      outgoingData [j]=byte(arduinoDataRow.get(j));
-  //    }
-  //    port.write(outgoingData);
-  //    println(outgoingData);
-  //  }
 }
 void draw() {
-  for (int i=0; i<arduinoData.size(); i++) {
-
-    //  for (int i=0; i<20; i++) {
-    //   println("row" + i); 
-    ArrayList<Integer> arduinoDataRow =(ArrayList) arduinoData.get(i);
-    outgoingData = new byte[arduinoDataRow.size()];
-
-    for (int j=0; j<arduinoDataRow.size(); j++) {
-      outgoingData [j]=byte(arduinoDataRow.get(j));
-    }
-//    port.write(outgoingData);
-    if (timer.isFinished()) {
-      timer.start();
-      port.write(outgoingData);
-//      println("sent Data");
-    }
+  if (visibilityNum < 10 && humidityNum > 60 && temprNum <=32)
+  {
+        value1 = 1; //THIS WILL BE THE LED VALUE
+    println ("Arduino, it's snowy");
+    println (value1);
   }
-  //    println(outgoingData);
-}
+  else {
+    value1 = 0;
+  }
+  //WINDY PART HERE:
+  if (windspeedNum > 10)
+  {
+    value2 = 1; //THIS WILL BE THE FAN VALUE
+    println ("Arduino, it's windy");
+        println(value2);
+  } 
+  else {
+    value2=0;
+  }
+  //RAINING PART HERE:
+  if (visibilityNum < 10 && humidityNum > 80 &&temprNum>34)
+  {
+    value3 = humidityNum; //THIS WILL BE THE SERVO VALUE
+    println ("Arduino, it's raining");
+    println (value3);
+  }
+ else {
+   value3=0;
+ }
 
+  byte out [] = new byte[3];
+  out[0]=byte(value1);
+  out[1]=byte(value2);
+  out[2]=byte(value3);
+
+//  if(millis() > 2000){
+    port.write(out);
+ // }
+}
 
 void keyPressed() {
   if (key =='i') {
     println(entry);
   }
-
+  
   if (key =='l') {
     println(arduinoData);
   }
